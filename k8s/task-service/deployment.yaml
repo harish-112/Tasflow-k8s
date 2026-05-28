@@ -18,6 +18,9 @@ spec:
           image: taskflowregistry.azurecr.io/task-service:v1
           ports:
             - containerPort: 8001
+          volumeMounts:
+            - name: task-db
+              mountPath: /app/data
           resources:
             requests:
               cpu: "100m"
@@ -37,3 +40,7 @@ spec:
               port: 8001
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: task-db
+          persistentVolumeClaim:
+            claimName: task-service-pvc
