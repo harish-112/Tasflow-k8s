@@ -1,0 +1,41 @@
+services:
+
+  redis:
+    image: redis:7-alpine
+
+  task-service:
+    build: ./task-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - task-db:/app
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - TASK_SERVICE_URL=http://task-service:8001
+      - REDIS_HOST=redis
+    depends_on:
+      - task-service
+      - redis
+
+  worker:
+    build: ./worker
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - api-gateway
+
+volumes:
+  task-db:

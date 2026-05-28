@@ -1,0 +1,43 @@
+name: Build and Push to ACR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Build and push task-service
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/task-service:${{ github.sha }} ./task-service
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/task-service:${{ github.sha }}
+
+      - name: Build and push api-gateway
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/api-gateway:${{ github.sha }} ./api-gateway
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/api-gateway:${{ github.sha }}
+
+      - name: Build and push worker
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/worker:${{ github.sha }} ./worker
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/worker:${{ github.sha }}
+
+      - name: Build and push frontend
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:${{ github.sha }} ./frontend
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:${{ github.sha }}
