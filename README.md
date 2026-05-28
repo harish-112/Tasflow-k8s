@@ -16,11 +16,13 @@ The frontend never communicates directly with the database or the core applicati
 
 The **Task Service** acts as our core CRUD engine. It owns the database schemas, communicates with the data layer via SQLAlchemy, and safely executes the requested data modifications.
 
+
 [ React UI ] ──( HTTP )──> [ API Gateway ] ──( Async HTTP )──> [ Task Service ] ──> [ SQLite ]
                                   │
                            ( Redis Push )
                                   ▼
                            [ Redis Queue ] ──( Blocking Pop )──> [ Background Worker ]
+
                            
 What makes this system genuinely asynchronous is what happens immediately after a task is created. The moment a user submits a new entry, the API Gateway forks the workflow. While it waits to return a successful HTTP response to the browser, it simultaneously connects to a **Redis instances message queue** and pushes a serialized JSON event string (`task_created`) onto a list named `task_events`. 
 
